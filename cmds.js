@@ -151,9 +151,29 @@ exports.editCmd = (rl, id) => {
  * @param id Clave del quiz a probar.
  */
 exports.testCmd = (rl, id) => {
-    log('Probar el quiz indicado.', 'red');
-    rl.prompt();
-};
+    if (typeof id === "undefined") {
+        errorlog(`Falta el parámetro id.`);
+        rl.prompt();
+    } else {
+        try {
+            const quiz = model.getByIndex(id);
+            rl.question(colorize(quiz.question + "\n" , 'red'), answer => {
+                if (answer.trim().toLowerCase() === quiz.answer.toLowerCase()) {
+                    biglog('Correcto','green')
+                } else if (answer.trim().toLowerCase() !== quiz.answer.toLowerCase()) {
+                    biglog('Incorrecto','red')
+                }
+                rl.prompt();
+            });
+        } catch (error) {
+            errorlog(error.message);
+            rl.prompt();
+
+
+        }
+
+    }
+}
 
 
 /**
@@ -163,8 +183,34 @@ exports.testCmd = (rl, id) => {
  * @param rl Objeto readline usado para implementar el CLI.
  */
 exports.playCmd = rl => {
-    log('Jugar.', 'red');
-    rl.prompt();
+    let score = 0;
+    let toBeResolved = model.getAll();
+    const playOne = () => {
+        if (toBeResolved.length === 0) {
+            log(`CORRECTO - Lleva ${score} aciertos`);
+            log("No hay nada más que preguntar.");
+            log("Fin del examen. Aciertos:");
+            biglog(`${score}`, 'magenta');
+            rl.prompt();
+        } else {
+            let idx = Math.floor((Math.random() * (toBeResolved.length)));
+            const quiz = model.getByIndex(idx);
+            rl.question(colorize(quiz.question + "\n", 'red'), answer => {
+                if (answer.trim().toLowerCase() === quiz.answer.toLowerCase()) {
+                    score++;
+                    log(`Correcto - Lleva ${score} aciertos`);
+                    toBeResolved.splice(idx, 1);
+                    playOne();
+                } else if (answer.trim().toLowerCase() !== quiz.answer.toLowerCase()) {
+                    log("INCORRECTO.");
+                    log("Fin del examnen. Aciertos:");
+                    biglog(`${score}`, 'magenta');
+                    rl.prompt();
+                }
+            });
+        }
+    };
+    playOne();
 };
 
 
@@ -189,4 +235,6 @@ exports.creditsCmd = rl => {
 exports.quitCmd = rl => {
     rl.close();
 };
+
+
 
