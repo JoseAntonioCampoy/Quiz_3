@@ -1,5 +1,4 @@
 
-
 const {log, biglog, errorlog, colorize} = require("./out");
 
 const model = require('./model');
@@ -194,7 +193,7 @@ exports.playCmd = rl => {
             rl.prompt();
         } else {
             let idx = Math.floor((Math.random() * (toBeResolved.length)));
-            const quiz = model.getByIndex(idx);
+            const quiz = toBeResolved[idx];
             rl.question(colorize(quiz.question + "\n", 'red'), answer => {
                 if (answer.trim().toLowerCase() === quiz.answer.toLowerCase()) {
                     score++;
@@ -235,6 +234,3 @@ exports.creditsCmd = rl => {
 exports.quitCmd = rl => {
     rl.close();
 };
-
-
-
